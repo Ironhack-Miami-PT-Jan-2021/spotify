@@ -1,6 +1,8 @@
 require('dotenv').config();
 const express = require('express');
 const hbs = require('hbs');
+const bodyParser = require('body-parser');
+
 var SpotifyWebApi = require('spotify-web-api-node');
 
 // require spotify-web-api-node package here:
@@ -11,6 +13,7 @@ app.set('view engine', 'hbs');
 app.set('views', __dirname + '/views');
 app.use(express.static(__dirname + '/public'));
 
+app.use(bodyParser.urlencoded({ extended: true }));
 
 // credentials are optional
 var spotifyApi = new SpotifyWebApi({
@@ -75,6 +78,25 @@ app.get('/tracks/:albumid', (req, res, next)=>{
     }, function(err) {
         console.log('Something went wrong!', err);
     });
+})
+
+
+app.get('/search-tracks', (req, res, next)=>{
+
+  res.render('track-search')
+
+})
+
+
+app.post('/track-search-results', (req, res, next)=>{
+// in the future we will not use res render inside post routes
+// post routes will be for performing functional operations and redirecting
+  spotifyApi.searchTracks(req.body.songname)
+  .then(function(data) {
+    res.render('song-results', {songs: data.body.tracks.items});
+  }, function(err) {
+    console.error(err);
+  });
 })
 
 
